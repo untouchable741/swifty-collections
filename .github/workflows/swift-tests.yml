@@ -1,0 +1,26 @@
+name: Swift Package Tests
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Swift
+      uses: fwal/setup-swift@v2
+      with:
+        swift-version: "5.9"
+
+    - name: Build Package
+      run: swift build --build-tests
+
+    - name: Run Unit Tests
+      run: swift test
