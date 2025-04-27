@@ -9,11 +9,11 @@ import Foundation
 
 public struct Heap<Element> {
     private var elements: [Element] = []
-    private let sortOrder: (Element, Element) -> Bool
+    private let order: (Element, Element) -> Bool
     
-    public init(sortOrder: @escaping (Element, Element) -> Bool) {
+    public init(order: @escaping (Element, Element) -> Bool) {
         self.elements = []
-        self.sortOrder = sortOrder
+        self.order = order
     }
     
     public var isEmpty: Bool {
@@ -49,11 +49,11 @@ public struct Heap<Element> {
             let rightChildIndex = rightChildIndex(of: parentIndex)
             var candidateIndex = parentIndex
             
-            if leftChildIndex < elements.count, sortOrder(elements[leftChildIndex], elements[candidateIndex]) {
+            if leftChildIndex < elements.count, order(elements[leftChildIndex], elements[candidateIndex]) {
                 candidateIndex = leftChildIndex
             }
             
-            if rightChildIndex < elements.count, sortOrder(elements[rightChildIndex], elements[candidateIndex]) {
+            if rightChildIndex < elements.count, order(elements[rightChildIndex], elements[candidateIndex]) {
                 candidateIndex = rightChildIndex
             }
             
@@ -67,7 +67,7 @@ public struct Heap<Element> {
         var childIndex = index
         let child = elements[childIndex]
         var parentIndex = parentIndex(of: childIndex)
-        while childIndex > 0 && sortOrder(child, elements[parentIndex]) {
+        while childIndex > 0 && order(child, elements[parentIndex]) {
             elements[childIndex] = elements[parentIndex]
             childIndex = parentIndex
             parentIndex = self.parentIndex(of: childIndex)
@@ -86,4 +86,32 @@ public struct Heap<Element> {
     private func rightChildIndex(of index: Int) -> Int {
         2 * index + 2
     }
+}
+
+public struct MinHeap<Element: Comparable> {
+    private var heap: Heap<Element>
+    public init() {
+        self.heap = Heap(order: <)
+    }
+    
+    public var isEmpty: Bool { heap.isEmpty }
+    public var count: Int { heap.count }
+    public func peek() -> Element? { heap.peek() }
+    public mutating func insert(_ value: Element) { heap.insert(value) }
+    @discardableResult
+    public mutating func remove() -> Element? { heap.remove() }
+}
+
+public struct MaxHeap<Element: Comparable> {
+    private var heap: Heap<Element>
+    public init() {
+        self.heap = Heap(order: >)
+    }
+    
+    public var isEmpty: Bool { heap.isEmpty }
+    public var count: Int { heap.count }
+    public func peek() -> Element? { heap.peek() }
+    public mutating func insert(_ value: Element) { heap.insert(value) }
+    @discardableResult
+    public mutating func remove() -> Element? { heap.remove() }
 }
