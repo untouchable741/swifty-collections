@@ -10,6 +10,8 @@ runs:
 
     - name: Build Package
       run: swift build --build-tests
+      shell: bash
 
     - name: Run Unit Tests
       run: swift test
+      shell: bash
