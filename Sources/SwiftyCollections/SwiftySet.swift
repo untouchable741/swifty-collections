@@ -98,7 +98,7 @@ private extension SwiftySet {
 // Chaining strategy
 private extension SwiftySet {
     private mutating func insertChaining(_ element: Element) -> Bool {
-        guard var buckets = buckets else { return false }
+        guard buckets != nil else { return false }
         
         if needsResize() {
             resize()
@@ -112,7 +112,7 @@ private extension SwiftySet {
     }
     
     private mutating func removeChaining(_ element: Element) -> Bool {
-        guard var buckets = buckets else { return false }
+        guard buckets != nil else { return false }
         let index = abs(element.hashValue) % capacity
         if let idx = self.buckets![index].firstIndex(of: element) {
             self.buckets![index].remove(at: idx)
