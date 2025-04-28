@@ -20,10 +20,36 @@ on:
   workflow_dispatch:
 
 jobs:
+  availability-check:
+    name: Check Self-Hosted Runner Availability
+    runs-on: ubuntu-latest
+    outputs:
+      runner-online: ${{ steps.check.outputs.runner-online }}
+    steps:
+      - name: Check if self-hosted runner is online
+        id: check
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Checking runner status..."
+          STATUS=$(curl -s -H "Authorization: token $PAT_TOKEN" \
+            https://api.github.com/repos/$REPO/actions/runners | jq -r '.runners[] | select(.name=="macbook-pro-m1") | .status')
+
+          echo "Runner status: $STATUS"
+
+          if [ "$STATUS" = "online" ]; then
+            echo "runner-online=true" >> $GITHUB_OUTPUT
+          else
+            echo "runner-online=false" >> $GITHUB_OUTPUT
+          fi
+
   self-hosted-build:
     name: Self-hosted Build and Test
+    needs: availability-check
+    if: needs.availability-check.outputs.runner-online == 'true'
     runs-on: [self-hosted, macbook-pro-m1]
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,9 +61,10 @@ jobs:
 
   github-hosted-build:
     name: Github-hosted Fallback Build and Test
-    needs: self-hosted-build
-    if: failure()
+    needs: availability-check
+    if: needs.availability-check.outputs.runner-online == 'false'
     runs-on: macos-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
