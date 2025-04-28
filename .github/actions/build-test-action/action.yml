@@ -5,6 +5,8 @@ runs:
   steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+      with:
+        path: ./
 
     - name: Set up Swift
       uses: fwal/setup-swift@v2
