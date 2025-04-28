@@ -1,0 +1,18 @@
+name: Build and Test
+description: Shared steps to build and test swift package
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Swift
+      uses: fwal/setup-swift@v2
+      with:
+        swift-version: "5.9"
+
+    - name: Build Package
+      run: swift build --build-tests
+
+    - name: Run Unit Tests
+      run: swift test
