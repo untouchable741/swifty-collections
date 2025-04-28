@@ -21,8 +21,15 @@ jobs:
   self-hosted-build:
     name: Self-hosted Build and Test
     runs-on: [self-hosted, macbook-pro-m1]
+    timeout-minutes: 10
     steps:
-      - uses: ./.github/actions/build-test-action
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: ./
+
+      - name: Build and Test
+        uses: ./.github/actions/build-test-action
 
   github-hosted-build:
     name: Github-hosted Fallback Build and Test
@@ -30,4 +37,10 @@ jobs:
     if: failure()
     runs-on: macos-latest
     steps:
-      - uses: ./.github/actions/build-test-action
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: ./
+          
+      - name: Build and Test
+        uses: ./.github/actions/build-test-action
