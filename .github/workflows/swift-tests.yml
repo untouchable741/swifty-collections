@@ -18,19 +18,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  self-hosted-build:
+    name: Self-hosted Build and Test
     runs-on: [self-hosted, macbook-pro-m1]
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - uses: ./github/actions/build-test-action
 
-    - name: Set up Swift
-      uses: fwal/setup-swift@v2
-      with:
-        swift-version: "5.9"
-
-    - name: Build Package
-      run: swift build --build-tests
-
-    - name: Run Unit Tests
-      run: swift test
+  github-hosted-build:
+    name: Github-hosted Fallback Build and Test
+    needs: self-hosted-build
+    if: failure()
+    runs-on: macos-latest
+    steps:
+      - uses: ./github/actions/build-test-action
