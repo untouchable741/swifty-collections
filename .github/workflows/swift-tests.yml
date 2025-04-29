@@ -59,6 +59,11 @@ jobs:
       - name: Build and Test
         uses: ./.github/actions/build-test
 
+      - name: Create xcframework if needed (contains [release])
+        uses: ./.github/actions/build-xcframework
+        with:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
   github-hosted-build:
     name: Github-hosted Fallback Build and Test
     needs: availability-check
