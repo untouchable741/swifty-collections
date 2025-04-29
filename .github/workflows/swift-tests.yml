@@ -57,7 +57,7 @@ jobs:
           path: ./
 
       - name: Build and Test
-        uses: ./.github/actions/build-test-export-if-needed
+        uses: ./.github/actions/build-test
 
   github-hosted-build:
     name: Github-hosted Fallback Build and Test
