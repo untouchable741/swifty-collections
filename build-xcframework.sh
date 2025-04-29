@@ -16,6 +16,7 @@ mkdir -p "$BUILD_DIR"
 echo "📱 Archiving for iOS device..."
 xcodebuild archive \
   -scheme "$SCHEME" \
+  -configuration Release \
   -destination "generic/platform=iOS" \
   -archivePath "$BUILD_DIR/${SCHEME}-iOS.xcarchive" \
   SKIP_INSTALL=NO \
@@ -27,6 +28,7 @@ xcodebuild archive \
 echo "🖥️ Archiving for iOS Simulator..."
 xcodebuild archive \
   -scheme "$SCHEME" \
+  -configuration Release \
   -destination "generic/platform=iOS Simulator" \
   -archivePath "$BUILD_DIR/${SCHEME}-Simulator.xcarchive" \
   SKIP_INSTALL=NO \

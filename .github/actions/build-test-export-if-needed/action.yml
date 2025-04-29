@@ -15,3 +15,6 @@ runs:
     - name: Run Unit Tests
       run: swift test
       shell: bash
+
+    - name: Build XCFramework (only if needed)
+      uses: ./.github/actions/build-xcframework

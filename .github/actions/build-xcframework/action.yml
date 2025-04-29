@@ -1,0 +1,34 @@
+name: Build XCFramework
+description: Builds and commits XCFramework if [release]
+
+runs:
+  using: "composite"
+  steps:
+    - name: 🔍 Check if [release]
+      id: check_release
+      run: |
+        echo "Commit message: ${{ github.event.head_commit.message }}"
+        if [[ "${{ github.event.head_commit.message }}" == *"[release]"* ]]; then
+          echo "release=true" >> "$GITHUB_ENV"
+        else
+          echo "release=false" >> "$GITHUB_ENV"
+        fi
+      shell: bash
+
+    - name: 🛠️ Build XCFramework (only if [release])
+      if: env.release == 'true'
+      run: |
+        chmod +x ./build-xcframework.sh
+        ./build-xcframework.sh
+      shell: bash
+
+    - name: 📦 Commit and push (only if [release])
+      if: env.release == 'true'
+      run: |
+        git config --global user.name 'GitHub Actions Bot'
+        git config --global user.email 'actions@github.com'
+        git add -f build/SwiftyCollections.xcframework
+        git commit -m "🔁 Auto-build XCFramework [release]" || echo "No changes"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
