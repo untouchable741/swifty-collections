@@ -1,6 +1,9 @@
 name: Build XCFramework
 description: Builds and commits XCFramework if [release]
 inputs:
+  release:
+    description: "Release flag from dispatch"
+    required: true
   PAT_TOKEN:
     description: "GitHub Personal Access Token"
     required: true
@@ -11,11 +14,12 @@ runs:
     - name: 🔍 Check if [release]
       id: check_release
       run: |
-        echo "Commit message: ${{ github.event.head_commit.message }}"
-        if [[ "${{ github.event.head_commit.message }}" == *"[release]"* ]]; then
-          echo "release=true" >> "$GITHUB_ENV"
+        if [[ "${{ inputs.release }}" == "true" ]]; then
+          echo "release=true" >> $GITHUB_ENV
+        elif [[ "${{ inputs.commit_message }}" == *"[release]"* ]]; then
+          echo "release=true" >> $GITHUB_ENV
         else
-          echo "release=false" >> "$GITHUB_ENV"
+          echo "release=false" >> $GITHUB_ENV
         fi
       shell: bash
 

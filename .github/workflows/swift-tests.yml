@@ -18,6 +18,15 @@ on:
       - '.github/workflows/**'
       - '.github/actions/**'
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Trigger release build"
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
   availability-check:
@@ -62,6 +71,7 @@ jobs:
       - name: Create xcframework if needed (contains [release])
         uses: ./.github/actions/build-xcframework
         with:
+          release: ${{ github.event.inputs.release }}
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
   github-hosted-build:
@@ -84,5 +94,6 @@ jobs:
       - name: Create xcframework if needed (contains [release])
         uses: ./.github/actions/build-xcframework
         with:
+          release: ${{ github.event.inputs.release }}
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
