@@ -36,3 +36,9 @@ runs:
         git commit -m "🔁 Auto-build XCFramework [release]" || echo "No changes"
         git push
       shell: bash
+
+    - name: ℹ️ Skip Push (because not a [release] commit)
+      if: env.release != 'true'
+      run: |
+        echo "ℹ️ No [release] in commit message. Skipping XCFramework build and push."
+      shell: bash
