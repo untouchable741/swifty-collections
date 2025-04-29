@@ -1,9 +1,15 @@
 name: Build XCFramework
 description: Builds and commits XCFramework if [release]
 inputs:
+  repository:
+    description: "Full repo name (owner/repo)"
+    required: true
   release:
     description: "Release flag from dispatch"
-    required: true
+    required: false
+  commit_message:
+    description: "Commit message passed from push event"
+    required: false
   PAT_TOKEN:
     description: "GitHub Personal Access Token"
     required: true
@@ -33,7 +39,7 @@ runs:
     - name: 📦 Commit and push (only if [release])
       if: env.release == 'true'
       run: |
-        git remote set-url origin https://x-access-token:${{ inputs.PAT_TOKEN }}@github.com/${{ github.repository }}
+        git remote set-url origin https://x-access-token:${{ inputs.PAT_TOKEN }}@github.com/${{ inputs.repository }}
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
         git add -f build/SwiftyCollections.xcframework

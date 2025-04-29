@@ -99,5 +99,6 @@ jobs:
         with:
           release: ${{ github.event.inputs.release }}
           commit_message: ${{ github.event.head_commit.message }}
+          repository: ${{ github.repository }}
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
