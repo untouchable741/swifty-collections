@@ -72,4 +72,10 @@ jobs:
           path: ./
           
       - name: Build and Test
-        uses: ./.github/actions/build-test-export-if-needed
+        uses: ./.github/actions/build-test
+
+      - name: Create xcframework if needed (contains [release])
+        uses: ./.github/actions/build-xcframework
+        with:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
