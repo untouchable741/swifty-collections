@@ -5,19 +5,18 @@
 //  Created by TAI VUONG on 28/4/25.
 //
 
-private class Node<Element> {
-    var value: Element
-    var next: Node<Element>?
-    weak var previous: Node<Element>?
-    
-    init(value: Element) {
-        self.value = value
-    }
-}
-
 public struct DoublyLinkedList<Element> {
-    private var head: Node<Element>?
-    private var tail: Node<Element>?
+    public class Node {
+        var value: Element
+        var next: Node?
+        weak var previous: Node?
+        
+        init(value: Element) {
+            self.value = value
+        }
+    }
+    private var head: Node?
+    private var tail: Node?
     private(set) public var count: Int = 0
     
     public var isEmpty: Bool {
@@ -32,7 +31,7 @@ public struct DoublyLinkedList<Element> {
         tail?.value
     }
     
-    public mutating func prepend(_ element: Element) {
+    public mutating func prepend(_ element: Element) -> Node {
         let newNode = Node(value: element)
         if let headNode = head {
             newNode.next = headNode
@@ -42,6 +41,7 @@ public struct DoublyLinkedList<Element> {
         }
         head = newNode
         count += 1
+        return newNode
     }
     
     public mutating func append(_ element: Element) {
@@ -80,5 +80,30 @@ public struct DoublyLinkedList<Element> {
         }
         count -= 1
         return value
+    }
+    
+    mutating func moveToFront(_ node: Node) {
+        if node === head { return }
+        
+        if let prev = node.previous {
+            prev.next = node.next
+        }
+        
+        if let next = node.next {
+            next.previous = node.previous
+        }
+        
+        if node === tail {
+            tail = node.previous
+        }
+        
+        node.previous = nil
+        node.next = head
+        head?.previous = node
+        head = node
+        
+        if tail == nil {
+            tail = head
+        }
     }
 }

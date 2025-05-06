@@ -6,19 +6,17 @@
 //
 
 import Foundation
-
-private class Node<Element> {
-    var value: Element
-    var next: Node?
-    
-    init(value: Element) {
-        self.value = value
-    }
-}
-
 public struct LinkedList<Element> {
-    private var head: Node<Element>?
-    private var tail: Node<Element>?
+    public class Node {
+        var value: Element
+        var next: Node?
+        
+        init(value: Element) {
+            self.value = value
+        }
+    }
+    private var head: Node?
+    private var tail: Node?
     private(set) public var count: Int = 0
     
     public var isEmpty: Bool {
