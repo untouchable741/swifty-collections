@@ -110,3 +110,73 @@ final class SetTests: XCTestCase {
         }
     }
 }
+
+final class OpenAddressSetTests: XCTestCase {
+    func testInsertAndContains() {
+        var set = SwiftySet<Int>(strategy: .openAddressing, initialCapacity: 8)
+            XCTAssertTrue(set.insert(10))
+            XCTAssertTrue(set.insert(20))
+            XCTAssertTrue(set.contains(10))
+            XCTAssertTrue(set.contains(20))
+            XCTAssertFalse(set.contains(30))
+        }
+
+        func testRemove() {
+            var set = SwiftySet<Int>(strategy: .openAddressing)
+            set.insert(10)
+            XCTAssertTrue(set.remove(10))
+            XCTAssertFalse(set.contains(10))
+            XCTAssertFalse(set.remove(10))
+        }
+
+        func testDuplicateInsert() {
+            var set = SwiftySet<Int>(strategy: .openAddressing)
+            XCTAssertTrue(set.insert(42))
+            XCTAssertFalse(set.insert(42))
+            XCTAssertEqual(set.count, 1)
+        }
+
+        func testResize() {
+            var set = SwiftySet<Int>(strategy: .openAddressing, initialCapacity: 4)
+            for i in 0..<50 {
+                set.insert(i)
+            }
+            XCTAssertEqual(set.count, 50)
+
+            for i in 0..<50 {
+                XCTAssertTrue(set.contains(i))
+            }
+        }
+
+        func testTombstoneDoesNotBreakContains() {
+            var set = SwiftySet<Int>(strategy: .openAddressing, initialCapacity: 8)
+            let a = 5
+            let b = 13
+            set.insert(a)
+            set.insert(b)
+
+            XCTAssertTrue(set.remove(a))
+            XCTAssertFalse(set.contains(a))
+            XCTAssertTrue(set.contains(b))
+        }
+
+        func testReinsertAfterRemove() {
+            var set = SwiftySet<Int>(strategy: .openAddressing, initialCapacity: 4)
+            XCTAssertTrue(set.insert(7))
+            XCTAssertTrue(set.remove(7))
+            XCTAssertTrue(set.insert(7))
+            XCTAssertTrue(set.contains(7))
+        }
+
+        func testFullWrapAroundProbe() {
+            var set = SwiftySet<Int>(strategy: .openAddressing, initialCapacity: 4)
+
+            let values = [0, 4, 8]
+            for v in values {
+                set.insert(v)
+            }
+            set.remove(4)
+            XCTAssertTrue(set.insert(12))
+            XCTAssertTrue(set.contains(12))
+        }
+}

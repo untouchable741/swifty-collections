@@ -10,12 +10,14 @@ import Foundation
 public enum HashingStrategy {
     case linear
     case chaining
-    //    case openAddressing
+    case openAddressing
 }
 
 public struct SwiftySet<Element: Hashable> {
     private var elements: [Element] // Used only for .linear
     private var buckets: [[Element]]? // Used only for .chaining
+    private var slots: [Slot<Element>] // Used only for .openAddressing
+    
     private var strategy: HashingStrategy
     private var capacity: Int
     private let maxLoadFactor: Double = 0.75
@@ -23,13 +25,19 @@ public struct SwiftySet<Element: Hashable> {
     public init(strategy: HashingStrategy = .chaining, initialCapacity: Int = 16) {
         self.strategy = strategy
         self.capacity = initialCapacity
-        self.elements = []
-        if strategy == .linear {
+        switch strategy {
+        case .linear:
             self.elements = []
             self.buckets = nil
-        } else {
+            self.slots = []
+        case .chaining:
             self.elements = []
             self.buckets = Array(repeating: [], count: initialCapacity)
+            self.slots = []
+        case .openAddressing:
+            self.elements = []
+            self.buckets = nil
+            self.slots = Array(repeating: .empty, count: initialCapacity)
         }
     }
     
@@ -43,6 +51,11 @@ public struct SwiftySet<Element: Hashable> {
             return elements.count
         case .chaining:
             return buckets?.reduce(0) { $0 + $1.count } ?? 0
+        case .openAddressing:
+            return slots.filter {
+                if case .occupied = $0 { return true }
+                return false
+            }.count
         }
     }
     
@@ -53,6 +66,8 @@ public struct SwiftySet<Element: Hashable> {
             return elements.contains(element)
         case .chaining:
             return containsChaining(element)
+        case .openAddressing:
+            return containsOpenAddressing(element)
         }
     }
     
@@ -63,6 +78,8 @@ public struct SwiftySet<Element: Hashable> {
             return insertLinear(newElement)
         case .chaining:
             return insertChaining(newElement)
+        case .openAddressing:
+            return insertOpenAddressing(newElement)
         }
     }
     
@@ -73,6 +90,8 @@ public struct SwiftySet<Element: Hashable> {
             return removeLinear(element)
         case .chaining:
             return removeChaining(element)
+        case .openAddressing:
+            return removeOpenAddressing(element)
         }
     }
 }
@@ -125,6 +144,109 @@ private extension SwiftySet {
         guard let buckets = buckets else { return false }
         let index = abs(element.hashValue) % capacity
         return buckets[index].contains(element)
+    }
+}
+
+// Open Addressing
+private extension SwiftySet {
+    private enum Slot<Value: Hashable> {
+        case occupied(Value)
+        case empty
+        case tombstone
+        
+        var element: Value? {
+            if case .occupied(let value) = self {
+                return value
+            } else {
+                return nil
+            }
+        }
+    }
+    
+    private mutating func insertOpenAddressing(_ element: Element) -> Bool {
+        if needsResizeOpenAddressing() {
+            resizeOpenAddressing()
+        }
+        
+        var index = abs(element.hashValue) % slots.count
+        let originalIndex = index
+        
+        repeat {
+            switch slots[index] {
+            case .empty, .tombstone:
+                slots[index] = .occupied(element)
+                return true
+            case .occupied(let existing):
+                if existing == element { return false } // Already exist
+            }
+            index = (index + 1) % slots.count
+        } while index != originalIndex
+        
+        return false // Full slots (shouldn't happen after resize)
+    }
+    
+    private func containsOpenAddressing(_ element: Element) -> Bool {
+        var index = abs(element.hashValue) % slots.count
+        let originalIndex = index
+        
+        repeat {
+            switch slots[index] {
+            case .empty:
+                return false
+            case .occupied(let existing):
+                if existing == element { return true }
+            case .tombstone:
+                break
+            }
+            index = (index + 1) % slots.count
+        } while index != originalIndex
+        
+        return false
+    }
+    
+    mutating func removeOpenAddressing(_ element: Element) -> Bool {
+        var index = abs(element.hashValue) % slots.count
+        let originalIndex = index
+        
+        repeat {
+            switch slots[index] {
+            case .empty:
+                return false
+            case .occupied(let existing):
+                if existing == element {
+                    slots[index] = .tombstone
+                    return true
+                }
+            case .tombstone:
+                break
+            }
+            index = (index + 1) % slots.count
+        } while index != originalIndex
+        
+        return false
+    }
+    
+    
+    private mutating func resizeOpenAddressing() {
+        let oldSlots = slots
+        slots = Array(repeating: .empty, count: slots.count * 2)
+        for slot in oldSlots {
+            if case .occupied(let element) = slot {
+                _ = insertOpenAddressing(element) // Reinsert with new hash
+            }
+        }
+    }
+    
+    private func loadFactorOpenAddressing() -> Double {
+        let activeCount = slots.filter {
+            if case .occupied = $0 { return true }
+            return false
+        }.count
+        return Double(activeCount) / Double(slots.count)
+    }
+    
+    private func needsResizeOpenAddressing() -> Bool {
+        return loadFactorOpenAddressing() > maxLoadFactor
     }
 }
 
