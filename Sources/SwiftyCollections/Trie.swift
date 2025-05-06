@@ -57,4 +57,29 @@ public final class Trie {
         }
         return current
     }
+    
+    public func remove(_ word: String) {
+        guard !word.isEmpty else { return }
+        
+        var current = root
+        
+        var stack: [(node: Node, character: Character)] = []
+        
+        for character in word {
+            guard let child = current.children[character] else {
+                return
+            }
+            stack.append((current, character))
+            current = child
+        }
+        
+        guard current.isWord else { return }
+        current.isWord = false
+    
+        while !stack.isEmpty && current.children.isEmpty && !current.isWord {
+            let (parent, character) = stack.removeLast()
+            parent.children[character] = nil
+            current = parent
+        }
+    }
 }

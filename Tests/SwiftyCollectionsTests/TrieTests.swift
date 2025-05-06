@@ -88,4 +88,49 @@ final class TrieTests: XCTestCase {
         XCTAssertFalse(trie.contains("abcde"))
         XCTAssertTrue(trie.contains("abcdefgh"))
     }
+    
+    func testRemoveExistingWord() {
+            let trie = Trie()
+            trie.insert("cat")
+            trie.insert("car")
+            
+            XCTAssertTrue(trie.contains("cat"))
+            trie.remove("cat")
+            XCTAssertFalse(trie.contains("cat"))
+            XCTAssertTrue(trie.contains("car")) // ensure "car" still exists
+        }
+
+        func testRemoveNonexistentWord() {
+            let trie = Trie()
+            trie.insert("car")
+            trie.remove("cap") // not inserted
+            XCTAssertTrue(trie.contains("car")) // "car" should remain unaffected
+        }
+
+        func testRemovePrefixWord() {
+            let trie = Trie()
+            trie.insert("car")
+            trie.insert("cart")
+
+            trie.remove("car")
+            XCTAssertFalse(trie.contains("car"))
+            XCTAssertTrue(trie.contains("cart")) // child path should still exist
+        }
+
+        func testRemoveLongerWordLeavesPrefix() {
+            let trie = Trie()
+            trie.insert("car")
+            trie.insert("cart")
+            
+            trie.remove("cart")
+            XCTAssertTrue(trie.contains("car")) // parent word should remain
+            XCTAssertFalse(trie.contains("cart"))
+        }
+
+        func testRemoveEmptyStringDoesNothing() {
+            let trie = Trie()
+            trie.insert("cat")
+            trie.remove("")
+            XCTAssertTrue(trie.contains("cat")) // nothing removed
+        }
 }
